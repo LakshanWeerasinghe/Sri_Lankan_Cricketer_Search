@@ -1,6 +1,6 @@
-from elasticsearch import Elasticsearch
+import json
 
-from queries import bool_multi_match_and_sort, multi_match_any_and_sort, multi_match
+from elasticsearch import Elasticsearch
 from utils.utils import get_cosine_sim
 
 es = Elasticsearch('http://localhost:9200')
@@ -17,9 +17,8 @@ def get_best_similarity(word, keywords):
 def intent_classifier(search_term):
     best_terms = ["top", "best", "super", "පට්ට", "පට්ටම", "සුපිරිම", "හොඳම", "හොදම"]
     worst_terms = ["worst", "bad", "ugly", "චොරම", "චාටර්ම"]
-    category_terms = ["batter", "batsmen", "bowler", "player", "runs", "wicket", "debut",
-                      "odi", "t20", "test", "පිතිකරුවන්", "පන්දු", "යවන්නා", "ක්‍රීඩකයා",
-                      "ලකුණු", "කඩුලු"]
+    category_terms = ["batter", "batsmen", "bowler", "player", "runs", "wickets", "wicket", "debut",
+                      "odi", "t20", "test"]
 
     _is_intent_best = False
     _is_intent_worst = False
@@ -35,15 +34,15 @@ def intent_classifier(search_term):
         worst_simi = get_best_similarity(term, worst_terms)
         category_simi = get_best_similarity(term, category_terms)
 
-        if best_simi[0] > 0.85:
+        if best_simi[0] > 0.9:
             _is_intent_best = True
             filter_word_indexes.append(term_index)
 
-        if worst_simi[0] > 0.85:
+        if worst_simi[0] > 0.9:
             _is_intent_worst = True
             filter_word_indexes.append(term_index)
 
-        if category_simi[0] > 0.85:
+        if category_simi[0] > 0.9:
             _is_intent_category = True
             _intent_categories.append(category_terms[category_simi[1]])
             filter_word_indexes.append(term_index)
@@ -70,24 +69,24 @@ def intent_classifier(search_term):
 
 
 def search_text(user_query):
+
     query = {
         "size": 10,
         "query": {
             "multi_match": {
                 "query": user_query,
-                "fields": ["full_name_en^3", "birthday", "batting_style_en^1.5", "bowling_style_en^1.5", "role_en^3",
-                           "education_en^2.5", "biography_en", "international_carrier_en", "test_debut_en^1.5",
-                           "odi_debut_en^1.5", "t20i_debut_en^1.5", "full_name_si^3", "batting_style_si^1.5",
-                           "bowling_style_si^1.5", "role_si^1.5",
-                           "education_si^2", "biography_si", "international_carrier_si", "test_debut_si^1.5",
-                           "odi_debut_si^1.5", "t20i_debut_si^1.5"
+                "fields": ["full_name_en^3", "birthday", "batting_style_en", "bowling_style_en", "role_en^1.5",
+                           "education_en", "biography_en", "international_carrier_en", "test_debut_en", "odi_debut_en",
+                           "t20i_debut_en", "full_name_si^3", "batting_style_si", "bowling_style_si", "role_si^1.5",
+                           "education_si", "biography_si", "international_carrier_si", "test_debut_si",
+                           "odi_debut_si", "t20i_debut_si"
                            ]
             }
         }
     }
 
     print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
+    results = es.search(index='test_corpus', body=query)
     return results
 
 
@@ -98,16 +97,7 @@ def search_intent_category(resultword, intent_categories, size):
         "bowler": ["bowling_style_en", "role_en"],
         "test": ["test_debut_en"],
         "odi": ["odi_debut_en"],
-        "t20": ["t20_debut_en"],
-        "player": ["odi_runs", "odi_wickets"],
-        "runs": ["odi_runs", "odi_wickets"],
-        "wicket": ["odi_wickets"],
-        "පිතිකරුවන්": ["odi_runs"],
-        "පන්දු": ["odi_wickets"],
-        "යවන්නා": ["odi_wickets"],
-        "ක්‍රීඩකයා": ["odi_runs", "odi_wickets"],
-        "ලකුණු": ["odi_runs"],
-        "කඩුලු": ["odi_wickets"]
+        "t20": ["t20_debut_en"]
     }
 
     boosting_fields = []
@@ -115,7 +105,6 @@ def search_intent_category(resultword, intent_categories, size):
         if "debut" in intent_categories:
             if category in ["odi", "test", "t20"] and "debut":
                 boosting_fields.append(f'{category}_debut_en^3')
-                boosting_fields.append(f'{category}_debut_si^3')
             else:
                 boosting_fields.extend(["test_debut_en", "odi_debut_en", "t20_debut_en"])
         elif category in ["odi", "test", "t20"] and "debut":
@@ -125,40 +114,74 @@ def search_intent_category(resultword, intent_categories, size):
     if not size:
         size = 20
 
-    query = multi_match(size, resultword, boosting_fields)
+    query = {
+        "size": size,
+        "query": {
+            "multi_match": {
+                "query": resultword,
+                "operator": "or",
+                "type": "best_fields",
+                "fields": boosting_fields
+            }
+        }
+    }
 
     print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
+    results = es.search(index='corpus-en', body=query)
     return results
 
 
 def search_best(resultword, intent_categories, size, is_best):
-    print(resultword, intent_categories, size, is_best)
-    fields = []
-
     order = "desc"
     if not is_best:
         order = "asc"
 
-    batter_intents = ["batter", "batsmen", "player", "runs", "පිතිකරුවන්", "ක්‍රීඩකයා", "ලකුණු"]
-    bowler_intents = ["bowler", "player", "wicket", "පන්දු", "යවන්නා", "කඩුලු"]
+    terms_map = {
+        "batter": ["odi_runs"],
+        "batsmen": ["odi_runs"],
+        "bowler": ["odi_wickets"],
+        "player": ["odi_runs", "odi_wickets"],
+        "runs": ["odi_runs"],
+        "wickets": ["odi_wickets"],
+        "wicket": ["odi_wickets"],
+    }
 
+    boosting_fields = list()
+    for category in intent_categories:
+
+        if category in ["odi", "test", "t20"] and intent_categories in ["batter", "batsmen", "bowler"]:
+            continue
+        elif category in ["odi", "test", "t20"]:
+            continue
+        else:
+            boosting_fields.extend(terms_map.get(category))
+
+    print(boosting_fields)
     sort_query = {}
-    if not set(intent_categories).isdisjoint(batter_intents):
-        sort_query["odi_runs"] = {"order": order}
-    if not set(intent_categories).isdisjoint(bowler_intents):
-        sort_query["odi_wickets"] = {"order": order}
+    for field in list(boosting_fields):
+        sort_query[field] = {"order": order}
 
     if size is None:
         size = 10
 
-    if resultword:
-        query = bool_multi_match_and_sort(size, sort_query, resultword, fields)
-    else:
-        query = multi_match_any_and_sort(size, sort_query)
+    resultword += " odi"
+
+    query = {
+        "size": size,
+        "query": {
+            "bool": {
+                "must": [{
+                    "multi_match": {
+                        "query": resultword
+                    }
+                }]
+            }
+        },
+        "sort": sort_query
+    }
 
     print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
+    results = es.search(index='corpus-en', body=query)
     return results
 
 
@@ -169,9 +192,10 @@ def show_results(result):
         print(player_details.get('full_name_en'))
 
 
-def search(user_query):
-    is_intent_best, is_intent_worst, is_intent_category, \
-    intent_categories, intent_count, resultword = intent_classifier(user_query)
+if __name__ == '__main__':
+    user_query = "top 10 batsmen"
+    is_intent_best, is_intent_worst, is_intent_category, intent_categories, intent_count, resultword = intent_classifier(
+        user_query)
 
     print(is_intent_best, is_intent_worst, is_intent_category, intent_categories, intent_count, resultword)
     if is_intent_best:
@@ -183,5 +207,3 @@ def search(user_query):
     else:
         search_result = search_text(user_query)
     print(show_results(search_result))
-    print(search_result)
-    return search_result

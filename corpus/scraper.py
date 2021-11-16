@@ -1,10 +1,12 @@
 import json
 import os
 import re
+from multiprocessing import Pool
+
 import requests
 import wikipedia
 from bs4 import BeautifulSoup
-from multiprocessing import Pool
+
 from objects.Player import Player
 
 wikipedia.set_lang("en")
@@ -65,7 +67,6 @@ def debut_info_extractor(player, soup):
 
 
 def extract_player_stats(player, soup):
-
     table_headers = soup.find_all('h5', class_='table-header')
     tables = soup.find_all('tbody')
 
@@ -87,11 +88,13 @@ def extract_player_stats(player, soup):
 
     odi_wickets = 0
     if player.test_debut_en:
-        odi_wickets = BeautifulSoup(str(tables[wickets_index]), 'html.parser').find('tr', class_='fix-second-child-color')
+        odi_wickets = BeautifulSoup(str(tables[wickets_index]), 'html.parser').find('tr',
+                                                                                    class_='fix-second-child-color')
         for i in range(18):
             odi_wickets = odi_wickets.next
     else:
-        odi_wickets = BeautifulSoup(str(tables[wickets_index]), 'html.parser').find('tr', class_='fix-first-child-color')
+        odi_wickets = BeautifulSoup(str(tables[wickets_index]), 'html.parser').find('tr',
+                                                                                    class_='fix-first-child-color')
         for i in range(18):
             odi_wickets = odi_wickets.next
 

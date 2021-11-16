@@ -1,4 +1,5 @@
 import json
+
 from elasticsearch import Elasticsearch
 
 es = Elasticsearch('http://localhost:9200')
@@ -12,11 +13,11 @@ def read_corpus(filename):
 
 
 def create_index():
-    corpus = read_corpus('corpus/player_corpus_en.json')
-    # corpus = json.loads(corpus)
+
+    corpus = read_corpus('corpus/final-corpus.json')
 
     for document in corpus:
-        es.index(index='corpus-en', document=json.loads(document))
+        es.index(index='sri-lankan-cricketers', document=json.loads(document))
 
 
 if __name__ == '__main__':

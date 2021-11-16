@@ -16,7 +16,6 @@ def write_corpus(data):
 
 
 def reduce_text_size(player: Player):
-
     if player.international_carrier_en:
         international_carrier_en = ' '.join(player.international_carrier_en.split()[0:120])
         setattr(player, "international_carrier_en", international_carrier_en)

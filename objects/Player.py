@@ -50,7 +50,7 @@ class Player:
         player_details += "Internation Carrier (EN) : {}\n\n".format(self.international_carrier_en)
         player_details += "Internation Carrier (SI) : {}\n\n".format(self.international_carrier_si)
         player_details += "Test Debut : (EN)  {}\n\n".format(self.test_debut_en)
-        player_details += "Test Debut : (SI)  {}\n\n".format(self.test_debut_en)
+        player_details += "Test Debut : (SI)  {}\n\n".format(self.test_debut_si)
         player_details += "ODI Debut (EN) : {}\n\n".format(self.odi_debut_en)
         player_details += "ODI Debut (SI) : {}\n\n".format(self.odi_debut_si)
         player_details += "T20I Debut (EN) : {}\n\n".format(self.t20i_debut_en)
