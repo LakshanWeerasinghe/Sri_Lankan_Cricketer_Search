@@ -1,0 +1,7 @@
+requests==2.26.0
+beautifulsoup4==4.10.0
+googletrans==3.1.0a0
+wikipedia==1.4.0
+elasticsearch==7.15.1
+flask==2.0.2
+python-dotenv==0.19.2
