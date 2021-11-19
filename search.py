@@ -17,8 +17,8 @@ def get_best_similarity(word, keywords):
 def intent_classifier(search_term):
     best_terms = ["top", "best", "super", "පට්ට", "පට්ටම", "සුපිරිම", "හොඳම", "හොදම"]
     worst_terms = ["worst", "bad", "ugly", "චොරම", "චාටර්ම"]
-    category_terms = ["batter", "batsmen", "bowler", "player", "runs", "wicket", "debut",
-                      "odi", "t20", "test", "පිතිකරුවන්", "පන්දු", "යවන්නා", "ක්‍රීඩකයා",
+    category_terms = ["batter", "batsmen", "bowler", "player", "runs", "wicket", "debut", "මංගල", "තරගය",
+                      "odi", "t20", "test", "පිතිකරුවන්", "පන්දු", "යවන්නා", "ක්‍රීඩකයා", "තරඟය",
                       "ලකුණු", "කඩුලු"]
 
     _is_intent_best = False
@@ -110,9 +110,11 @@ def search_intent_category(resultword, intent_categories, size):
         "කඩුලු": ["odi_wickets"]
     }
 
+    debut_intent_keywords = ["debut", "මංගල", "තරගය", "තරඟය"]
+
     boosting_fields = []
     for category in intent_categories:
-        if "debut" in intent_categories:
+        if len(list(set(debut_intent_keywords).intersection(set(intent_categories)))) > 0:
             if category in ["odi", "test", "t20"] and "debut":
                 boosting_fields.append(f'{category}_debut_en^3')
                 boosting_fields.append(f'{category}_debut_si^3')
