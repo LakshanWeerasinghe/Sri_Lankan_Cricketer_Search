@@ -2,69 +2,75 @@
 <html lang="en">
 <head>
 
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Pacifico">
-  <link rel="icon" href="http://obj-cache.cloud.ruanbekker.com/favicon.ico">
-  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Pacifico">
+    <link rel="icon" href="http://obj-cache.cloud.ruanbekker.com/favicon.ico">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/results.css') }}">
 
-  <title>Bookmarks Search</title>
+    <title>අපේ කොල්ලෝ සෙවුම</title>
 
 </head>
 <body>
 
 <div class="container">
-  <div style="background:transparent !important" class="jumbotron">
-    <div style="font-family: 'Pacifico', cursive;">
-      <p>
-      <center>
-        <font size="8">Search for Blog Posts</font>
-      </center>
-      </p>
+    <div style="background:transparent !important" class="jumbotron">
+        <div style="font-family: 'Pacifico', cursive;">
+            <p class="search-title">
+                අපේ කොල්ලෝ සෙවුම
+            </p>
+        </div>
     </div>
-  </div>
 
-  <form action="/search/results" method="post">
-    <div class="input-group">
-      <input type="text" class="form-control input-lg" name="input" placeholder="Search"  autofocus>
-      <div class="input-group-btn">
-        <button class="btn btn-primary btn-lg" type="submit">
-          <i class="glyphicon glyphicon-search"></i>
-        </button>
-      </div>
-    </div>
-  </form>
+    <form action="/search/results" method="post">
+        <div class="input-group search-box">
+            <input type="text" class="form-control input-lg" name="input" placeholder="ටයිප් කරන්න..." autofocus>
+            <div class="input-group-btn">
+                <button class="btn btn-primary btn-lg" type="submit">
+                    <i class="glyphicon glyphicon-search"></i>
+                </button>
+            </div>
+        </div>
+    </form>
 
-  <center>
-    <h1>Results: ({{ res['hits']['total'] }}) </h1>
-  </center>
+    {% if not res['no_result'] %}
+    <table class="table">
+        <thead class="table-header">
+        <tr>
+            <td></td>
+            <td>Full Name</td>
+            <td>සම්පූර්ණ නම</td>
+            <td>පිතිකරණ ඉරියව්ව</td>
+            <td>පන්දු යවන ඉරියව්ව</td>
+            <td>එක්දින ලකුණු</td>
+            <td>එක්දින කඩුලු</td>
+        </tr>
+        </thead>
 
-  <table class="table">
-    <thead>
-    <tr>
-      <th>Full Name (EN)</th>
-      <th>Full Name (SI)</th>
-      <th>Batting Style (SI)</th>
-      <th>BIO (SI)</th>
-    </tr>
-    </thead>
+        {% for idx in range(res['player_count']) %}
+        <tbody class="table-body">
+        <tr>
+            <td>{{idx+1}}</td>
+            <td><a href="{{ url_for('get_user_profile', id=res['players'][idx]['_id']) }}">{{
+                res['players'][idx]['full_name_en'] }}</a></td>
+            <td>{{ res['players'][idx]['full_name_si'] }}</td>
+            <td>{{ res['players'][idx]['batting_style_si'] }}</td>
+            <td>{{ res['players'][idx]['bowling_style_si'] }}</td>
+            <td>{{ res['players'][idx]['odi_runs'] }}</td>
+            <td>{{ res['players'][idx]['odi_wickets'] }}</td>
+        </tr>
+        </tbody>
+        l
+        {% endfor %}
+    </table>
 
-    {% for hit in res['hits']['hits'] %}
-    <tbody>
-    <tr>
-      <th scope="row">{{ hit['_source']['full_name_en'] }}</th>
-      <td>{{ hit['_source']['full_name_si'] }}</td>
-      <td>{{ hit['_source']['batting_style_en'] }}</td>
-      <td>{{ hit['_source']['biography_si'] }}</td>
-    </tr>
-    </tbody>
-    {% endfor %}
-  </table>
+    {% endif %}
 
-  <footer class="footer">
-    <p>&copy; 2017 Ruan Bekker</p>
-  </footer>
+    {% if res['no_result'] %}
+    <p>ප්‍රතිඵල නොමැත</p>
+    {% endif %}
 
-</div>
+
 </div>
 </body>
 </html>

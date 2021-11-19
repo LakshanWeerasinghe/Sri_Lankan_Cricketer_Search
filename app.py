@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request
-from elasticsearch import Elasticsearch
 
 import search
 
@@ -20,10 +19,14 @@ def search_request():
     return render_template('results.html', res=res )
 
 
-@app.route('/profile', methods=['GET'])
-def get_user_profile():
+@app.route('/profile/<string:id>', methods=['GET'])
+def get_user_profile(id):
 
-    return render_template('profile.html')
+    result = search.get_player_by_id(id)
+    player = result.get('_source')
+
+    return render_template('profile.html', res=player)
+
 
 if __name__ == '__main__':
     app.debug = True

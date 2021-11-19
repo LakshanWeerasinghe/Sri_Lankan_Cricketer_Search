@@ -3,6 +3,8 @@ from elasticsearch import Elasticsearch
 from queries import bool_multi_match_and_sort, multi_match_any_and_sort, multi_match
 from utils.utils import get_cosine_sim
 
+from Settings import Settings
+
 es = Elasticsearch('http://localhost:9200')
 
 
@@ -171,6 +173,33 @@ def show_results(result):
         print(player_details.get('full_name_en'))
 
 
+def post_processor(result):
+    hits = result.get('hits').get('hits')
+    player_count = len(hits)
+    final_result = {}
+    if player_count == 0:
+        final_result['no_result'] = True
+    else:
+        final_result['no_result'] = False
+        final_result['player_count'] = player_count
+        players = []
+        for result_index in range(len(hits)):
+            player = {}
+            player_details = hits[result_index].get('_source')
+            player['_id'] = hits[result_index].get('_id')
+            player['full_name_en'] = player_details.get('full_name_en')
+            player['full_name_si'] = player_details.get('full_name_si')
+            player['batting_style_si'] = player_details.get('batting_style_si')
+            player['bowling_style_si'] = player_details.get('bowling_style_si')
+            player['odi_runs'] = player_details.get('odi_runs')
+            player['odi_wickets'] = player_details.get('odi_wickets')
+            players.append(player)
+
+        final_result['players'] = players
+
+    return final_result
+
+
 def search(user_query):
     is_intent_best, is_intent_worst, is_intent_category, \
     intent_categories, intent_count, resultword = intent_classifier(user_query)
@@ -186,4 +215,9 @@ def search(user_query):
         search_result = search_text(user_query)
     print(show_results(search_result))
     print(search_result)
-    return search_result
+
+    return post_processor(search_result)
+
+
+def get_player_by_id(player_id):
+    return es.get(index=Settings.index_name.value, id=player_id)

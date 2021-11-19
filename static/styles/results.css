@@ -1,0 +1,30 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f1f1f1;
+}
+
+.table-header{
+    font-size: 1em;
+}
+
+.table-body{
+    font-size: 0.85em;
+}
+
+.search-title{
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.search-box{
+    margin-bottom: 30px;
+}
+
+.align-center{
+    margin-top: 13%;
+}

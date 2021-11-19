@@ -16,8 +16,9 @@ and wikipedia using BeautifulSoup.
     ├── final-corpus.json : final corpus in both english and sinhala languages
     ├── scraper.py : script to exract data espncricinfo.com and wikipedia              
 ├── objects : player class 
-    ├── Player.py : plyaer object class
-├── templates : UI related files  
+├── utils : utility functions
+├── static : UI related CSS files
+├── templates : UI HTML related files  
 ├── app.py : backend of the web app created using Flask
 ├── create_index.py : script to upload data to Elasticsearch
 ├── queries.py : script contains all queries
