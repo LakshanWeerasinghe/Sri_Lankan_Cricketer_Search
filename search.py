@@ -1,9 +1,10 @@
 from elasticsearch import Elasticsearch
 
-from queries import bool_multi_match_and_sort, multi_match_any_and_sort, multi_match
+from queries import bool_multi_match_and_sort, multi_match_any_and_sort, multi_match,phrase_query
 from utils.utils import get_cosine_sim
 
 from Settings import Settings
+from utils.tokenizer import Tokenizer
 
 es = Elasticsearch('http://localhost:9200')
 
@@ -16,7 +17,7 @@ def get_best_similarity(word, keywords):
     return max_value, keywords_simi.index(max_value)
 
 
-def intent_classifier(search_term):
+def intent_classifier(keywords):
     best_terms = ["top", "best", "super", "පට්ට", "පට්ටම", "සුපිරිම", "හොඳම", "හොදම"]
     worst_terms = ["worst", "bad", "ugly", "චොරම", "චාටර්ම"]
     category_terms = ["batter", "batsmen", "bowler", "player", "runs", "wicket", "debut", "මංගල", "තරගය",
@@ -29,10 +30,9 @@ def intent_classifier(search_term):
     _intent_categories = []
     _intent_count = None
 
-    search_terms = search_term.split()
     filter_word_indexes = []
-    for term_index in range(len(search_terms)):
-        term = search_terms[term_index]
+    for term_index in range(len(keywords)):
+        term = keywords[term_index]
         best_simi = get_best_similarity(term, best_terms)
         worst_simi = get_best_similarity(term, worst_terms)
         category_simi = get_best_similarity(term, category_terms)
@@ -59,7 +59,7 @@ def intent_classifier(search_term):
 
     result_word = ''
     if _is_intent_best or _is_intent_worst or _is_intent_category:
-        query_words = search_term.split()
+        query_words = keywords
         result_words = []
         for word_index in range(len(query_words)):
             if word_index not in filter_word_indexes:
@@ -95,21 +95,22 @@ def search_text(user_query):
 
 def search_intent_category(resultword, intent_categories, size):
     terms_map = {
-        "batter": ["batting_style_en", "role_en"],
+        "batter": ["batting_style_en", "role_en", "batting_style_si"],
         "batsmen": ["batting_style_en", "role_en"],
         "bowler": ["bowling_style_en", "role_en"],
-        "test": ["test_debut_en"],
-        "odi": ["odi_debut_en"],
-        "t20": ["t20_debut_en"],
-        "player": ["odi_runs", "odi_wickets"],
-        "runs": ["odi_runs", "odi_wickets"],
-        "wicket": ["odi_wickets"],
-        "පිතිකරුවන්": ["odi_runs"],
-        "පන්දු": ["odi_wickets"],
-        "යවන්නා": ["odi_wickets"],
-        "ක්‍රීඩකයා": ["odi_runs", "odi_wickets"],
-        "ලකුණු": ["odi_runs"],
-        "කඩුලු": ["odi_wickets"]
+        "test": ["test_debut_en", "test_debut_si", "role_en", "role_si"],
+        "odi": ["odi_debut_en", "odi_debut_si", "role_en", "role_si"],
+        "t20": ["t20_debut_en", "t20_debut_si", "role_en", "role_si"],
+        "player": ["odi_wickets", "batting_style_en", "batting_style_si", "role_en", "role_si"],
+        "runs": ["batting_style_en", "batting_style_si", "role_en", "role_si"],
+        "wicket": ["bowling_style_en", "bowling_style_si", "role_en", "role_si"],
+        "පිතිකරුවන්": ["batting_style_en", "batting_style_si", "role_en", "role_si"],
+        "පන්දු": ["bowling_style_en", "bowling_style_si", "role_en", "role_si"],
+        "යවන්නා": ["bowling_style_en", "bowling_style_si", "role_en", "role_si"],
+        "ක්‍රීඩකයා": ["odi_wickets", "batting_style_en", "batting_style_si",
+                      "bowling_style_en", "bowling_style_si", "role_en", "role_si"],
+        "ලකුණු": ["batting_style_en", "batting_style_si", "role_en", "role_si"],
+        "කඩුලු": ["bowling_style_en", "bowling_style_si", "role_en", "role_si"]
     }
 
     debut_intent_keywords = ["debut", "මංගල", "තරගය", "තරඟය"]
@@ -129,6 +130,10 @@ def search_intent_category(resultword, intent_categories, size):
     if not size:
         size = 20
 
+    if len(resultword) == 0:
+        resultword = ' '.join(intent_categories)
+
+    print(boosting_fields)
     query = multi_match(size, resultword, boosting_fields)
 
     print(query)
@@ -166,11 +171,23 @@ def search_best(resultword, intent_categories, size, is_best):
     return results
 
 
+def search_phrase(phrase):
+    query = phrase_query(phrase)
+
+    print(query)
+    results = es.search(index='sri-lankan-cricketers', body=query)
+    return results
+
+
 def show_results(result):
     hits = result.get('hits').get('hits')
     for result_index in range(len(hits)):
         player_details = hits[result_index].get('_source')
         print(player_details.get('full_name_en'))
+
+
+def query_preprocessor(query):
+    return Tokenizer.tokenize(query)
 
 
 def post_processor(result):
@@ -197,12 +214,24 @@ def post_processor(result):
 
         final_result['players'] = players
 
+        # aggregations = result['aggregations']
+        # print(aggregations)
+
     return final_result
 
 
 def search(user_query):
+
+    tokens, phrases = query_preprocessor(user_query)
+
+    print(tokens, phrases)
+
+    if len(phrases) > 0:
+        search_result = search_phrase(phrases[0])
+        return post_processor(search_result)
+
     is_intent_best, is_intent_worst, is_intent_category, \
-    intent_categories, intent_count, resultword = intent_classifier(user_query)
+    intent_categories, intent_count, resultword = intent_classifier(tokens)
 
     print(is_intent_best, is_intent_worst, is_intent_category, intent_categories, intent_count, resultword)
     if is_intent_best:

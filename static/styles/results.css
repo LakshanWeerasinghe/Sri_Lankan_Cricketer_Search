@@ -7,24 +7,101 @@ body {
     background-color: #f1f1f1;
 }
 
-.table-header{
+/* table */
+.table-margin {
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+
+.table-header {
     font-size: 1em;
 }
 
-.table-body{
+.table-body {
     font-size: 0.85em;
 }
 
-.search-title{
+.search-title {
     text-align: center;
     font-size: 2em;
     font-weight: bold;
 }
 
-.search-box{
+.search-box {
     margin-bottom: 30px;
 }
 
-.align-center{
+.align-center {
     margin-top: 13%;
 }
+
+
+/* faceted search section */
+
+.faceted-search {
+    margin: 5px;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.faceted-search-card {
+
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.faceted-search-type {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.checkboxes input[type=checkbox]{
+    display: none;
+}
+
+/*  Start Role  */
+
+.role{
+    background-color: darkcyan;
+    border-radius: 3px;
+    border: None;
+    color: white;
+    margin: 10px;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.checkboxes input[type=checkbox]:checked + .role{
+    background-color: darkblue;
+}
+
+/* End Role*/
+
+/* Start Bowling*/
+.bowling {
+    background-color: darkorange;
+    border-radius: 3px;
+    border: None;
+    color: white;
+    margin: 10px;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.checkboxes input[type=checkbox]:checked + .bowling{
+    background-color: darkred;
+}
+
+/* End Bowling*/

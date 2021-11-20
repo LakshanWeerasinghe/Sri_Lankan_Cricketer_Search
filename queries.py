@@ -35,5 +35,36 @@ def multi_match(size, query, boosting_fields):
                 "type": "best_fields",
                 "fields": boosting_fields
             }
+        },
+        "aggs": {
+            "batting_style": {
+                "terms": {
+                    "field": "batting_style_si.keyword",
+                    "size": 15
+                }
+            },
+            "bowling_style": {
+                "terms": {
+                    "field": "bowling_style_si.keyword",
+                    "size": 15
+                }
+            },
+            "role": {
+                "terms": {
+                    "field": "role_si.keyword",
+                    "size": 15
+                }
+            }
+        }
+    }
+
+
+def phrase_query(phrase):
+    return {
+        "query": {
+            "multi_match": {
+                "query": phrase,
+                "type": "phrase"
+            }
         }
     }
