@@ -24,130 +24,89 @@
 
     <form action="/search/results" method="post">
         <div class="input-group search-box">
-            <input type="text" class="form-control input-lg" name="input" placeholder="ටයිප් කරන්න..." autofocus>
+            {% if res.search_term %}
+            <input type="text" class="form-control input-lg" name="input" placeholder="ටයිප් කරන්න..."
+                   value="{{res.search_term}}" autofocus>
             <div class="input-group-btn">
-                <button class="btn btn-primary btn-lg" type="submit">
+                <button class="btn btn-primary btn-lg" type="submit" name="form_1">
                     <i class="glyphicon glyphicon-search"></i>
                 </button>
             </div>
+            {% endif %}
+            {% if not res.search_term %}
+            <input type="text" class="form-control input-lg" name="input" placeholder="ටයිප් කරන්න..." autofocus>
+            <div class="input-group-btn">
+                <button class="btn btn-primary btn-lg" type="submit" name="form_1">
+                    <i class="glyphicon glyphicon-search"></i>
+                </button>
+            </div>
+            {% endif %}
         </div>
     </form>
 
     {% if not res['no_result'] %}
 
-    <div class="faceted-search">
-        <div>
-            <p class="faceted-search-type">විශේශීකරණය</p>
-            <div class="flex-container checkboxes">
-                <div>
-                    <input type="checkbox" name="rGroup" value="1" id="r1"/>
-                    <label class="role" for="r1">පන්දු යවන්නා (43)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="2" id="r2" />
-                    <label class="role" for="r2">තුන් ඉරියව් ක්‍රීඩකයා (28)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="3" id="r3" />
-                    <label class="role" for="r3">පිතිකරු (10)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="1" id="r4" />
-                    <label class="role" for="r4">කඩුලු රකින පිතිකරු (7)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="2" id="r5" />
-                    <label class="role" for="r5">මැදපෙළ පිතිකරු (5)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="3" id="r6" />
-                    <label class="role" for="r6">මුල්පෙළ පිතිකරු (5)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="1" id="r7"/>
-                    <label class="role" for="r7">ආරම්භක පිතිකරු (4)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="2" id="r8" />
-                    <label class="role" for="r8">පිතිකරන තුන් ඉරියව් ක්‍රීඩකයා (3)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="3" id="r9" />
-                    <label class="role" for="r9">පන්දු යවන තුන් ඉරියව් ක්‍රීඩකයා (1)</label>
+    <form action="/search/results/filter" method="post">
+        <div class="faceted-search">
+            <div>
+                <p class="faceted-search-type">විශේශීකරණය</p>
+                <div class="flex-container checkboxes">
+                    {% for role in roles %}
+                    <div>
+                        <input type="checkbox" name={{role.id}} value={{role.key}} id={{role.id}}
+                        />
+                        <label class="role" for={{role.id}}>{{role.key}} ({{role.doc_count}})</label>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-        </div>
-        <div>
-            <p class="faceted-search-type">පන්දු යවන ඉරියව්</p>
-            <div class="flex-container checkboxes">
-                <div>
-                    <input type="checkbox" name="rGroup" value="1" id="b1"/>
-                    <label class="bowling" for="b1">දකුණත් පිටදග (42)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="2" id="b2" />
-                    <label class="bowling" for="b2">දකුණත් මදවේග-වේග (28)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="3" id="b3" />
-                    <label class="bowling" for="b3">දකුණත් මදවේග (10)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="1" id="b4" />
-                    <label class="bowling" for="b4">වමත් ඕතඩොක්ස් (7)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="2" id="b5" />
-                    <label class="bowling" for="b5">දකුණත් පාදග (5)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="3" id="b6" />
-                    <label class="bowling" for="b6">වමත් මදවේග-වේග (5)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="1" id="b7"/>
-                    <label class="bowling" for="b7">දකුණත් වේග (4)</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="rGroup" value="2" id="b8" />
-                    <label class="bowling" for="b8">පවමත් මදවේග වමත් ඕතඩොක්ස් (3)</label>
+            <div>
+                <p class="faceted-search-type">පන්දු යවන ඉරියව්</p>
+                <div class="flex-container checkboxes">
+                    {% for bowling_style in bowling_styles %}
+                    <div>
+                        <input type="checkbox" name={{bowling_style.id}} value={{bowling_style.key}} id={{bowling_style.id}}
+                        />
+                        <label class="bowling" for={{bowling_style.id}}>{{bowling_style.key}}
+                            ({{bowling_style.doc_count}})</label>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
+            <button class="btn-filter" type="submit" name="form_2">පිරික්සන්න</button>
         </div>
 
-    </div>
+        <div class="table-margin">
+            <table class="table">
+                <thead class="table-header">
+                <tr>
+                    <td></td>
+                    <td>Full Name</td>
+                    <td>සම්පූර්ණ නම</td>
+                    <td>පිතිකරණ ඉරියව්ව</td>
+                    <td>පන්දු යවන ඉරියව්ව</td>
+                    <td>එක්දින ලකුණු</td>
+                    <td>එක්දින කඩුලු</td>
+                </tr>
+                </thead>
 
-    <div class="table-margin">
-        <table class="table">
-            <thead class="table-header">
-            <tr>
-                <td></td>
-                <td>Full Name</td>
-                <td>සම්පූර්ණ නම</td>
-                <td>පිතිකරණ ඉරියව්ව</td>
-                <td>පන්දු යවන ඉරියව්ව</td>
-                <td>එක්දින ලකුණු</td>
-                <td>එක්දින කඩුලු</td>
-            </tr>
-            </thead>
-
-            {% for idx in range(res['player_count']) %}
-            <tbody class="table-body">
-            <tr>
-                <td>{{idx+1}}</td>
-                <td><a href="{{ url_for('get_user_profile', id=res['players'][idx]['_id']) }}">{{
-                    res['players'][idx]['full_name_en'] }}</a></td>
-                <td>{{ res['players'][idx]['full_name_si'] }}</td>
-                <td>{{ res['players'][idx]['batting_style_si'] }}</td>
-                <td>{{ res['players'][idx]['bowling_style_si'] }}</td>
-                <td>{{ res['players'][idx]['odi_runs'] }}</td>
-                <td>{{ res['players'][idx]['odi_wickets'] }}</td>
-            </tr>
-            </tbody>
-            {% endfor %}
-        </table>
-    </div>
-
+                {% for idx in range(res['player_count']) %}
+                <tbody class="table-body">
+                <tr>
+                    <td>{{idx+1}}</td>
+                    <td><a href="{{ url_for('get_user_profile', id=res['players'][idx]['_id']) }}">{{
+                        res['players'][idx]['full_name_en'] }}</a></td>
+                    <td>{{ res['players'][idx]['full_name_si'] }}</td>
+                    <td>{{ res['players'][idx]['batting_style_si'] }}</td>
+                    <td>{{ res['players'][idx]['bowling_style_si'] }}</td>
+                    <td>{{ res['players'][idx]['odi_runs'] }}</td>
+                    <td>{{ res['players'][idx]['odi_wickets'] }}</td>
+                </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+        </div>
+    </form>
     {% endif %}
 
     {% if res['no_result'] %}

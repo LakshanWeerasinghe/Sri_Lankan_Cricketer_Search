@@ -1,10 +1,12 @@
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, ElasticsearchException
 
-from queries import bool_multi_match_and_sort, multi_match_any_and_sort, multi_match,phrase_query
+from queries import build_best_or_worst_intent_query, build_intent_category_query, build_phrase_query, \
+    build_no_intent_query
 from utils.utils import get_cosine_sim
 
 from Settings import Settings
 from utils.tokenizer import Tokenizer
+from utils.player_images import get_player_images
 
 es = Elasticsearch('http://localhost:9200')
 
@@ -18,6 +20,8 @@ def get_best_similarity(word, keywords):
 
 
 def intent_classifier(keywords):
+    print("======= intent classifying process begin =======")
+
     best_terms = ["top", "best", "super", "පට්ට", "පට්ටම", "සුපිරිම", "හොඳම", "හොදම"]
     worst_terms = ["worst", "bad", "ugly", "චොරම", "චාටර්ම"]
     category_terms = ["batter", "batsmen", "bowler", "player", "runs", "wicket", "debut", "මංගල", "තරගය",
@@ -57,7 +61,7 @@ def intent_classifier(keywords):
         if term == "player":
             _intent_count = 1
 
-    result_word = ''
+    keywords_str = ''
     if _is_intent_best or _is_intent_worst or _is_intent_category:
         query_words = keywords
         result_words = []
@@ -65,35 +69,37 @@ def intent_classifier(keywords):
             if word_index not in filter_word_indexes:
                 result_words.append(query_words[word_index])
 
-        result_word = ' '.join(result_words)
+        keywords_str = ' '.join(result_words)
 
-    print(result_word)
-    return _is_intent_best, _is_intent_worst, _is_intent_category, _intent_categories, _intent_count, result_word
-
-
-def search_text(user_query):
-    query = {
-        "size": 10,
-        "query": {
-            "multi_match": {
-                "query": user_query,
-                "fields": ["full_name_en^3", "birthday", "batting_style_en^1.5", "bowling_style_en^1.5", "role_en^3",
-                           "education_en^2.5", "biography_en", "international_carrier_en", "test_debut_en^1.5",
-                           "odi_debut_en^1.5", "t20i_debut_en^1.5", "full_name_si^3", "batting_style_si^1.5",
-                           "bowling_style_si^1.5", "role_si^1.5",
-                           "education_si^2", "biography_si", "international_carrier_si", "test_debut_si^1.5",
-                           "odi_debut_si^1.5", "t20i_debut_si^1.5"
-                           ]
-            }
-        }
-    }
-
-    print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
-    return results
+    print("======= intent classifying process end =======")
+    return _is_intent_best, _is_intent_worst, _is_intent_category, _intent_categories, _intent_count, keywords_str
 
 
-def search_intent_category(resultword, intent_categories, size):
+def search_text(keywords_str, role_filter, bowling_style_filter):
+    print("======= search for normal text begin =======")
+    print("keywords_str : {}".format(keywords_str))
+
+    query = build_no_intent_query(keywords_str, role_filter, bowling_style_filter)
+
+    print("search for normal text query : {}".format(query))
+    results = None
+    try:
+        results = es.search(index='sri-lankan-cricketers', body=query)
+    except ElasticsearchException as ex:
+        print(ex.args)
+    finally:
+        print("======= search for normal text end =======")
+        return results
+
+
+def search_intent_category(keywords_str, intent_categories, size, role_filter, bowling_style_filter):
+    print("======= search for intent category begin =======")
+    print("keywords_str : {}".format(keywords_str))
+    print("intent_categories : {}".format(intent_categories))
+    print("size : {}".format(size))
+    print("role_filter : {}".format(role_filter))
+    print("bowling_style_filter : {}".format(bowling_style_filter))
+
     terms_map = {
         "batter": ["batting_style_en", "role_en", "batting_style_si"],
         "batsmen": ["batting_style_en", "role_en"],
@@ -127,56 +133,61 @@ def search_intent_category(resultword, intent_categories, size):
             continue
         else:
             boosting_fields.extend(terms_map.get(category))
-    if not size:
-        size = 20
-
-    if len(resultword) == 0:
-        resultword = ' '.join(intent_categories)
 
     print(boosting_fields)
-    query = multi_match(size, resultword, boosting_fields)
+    query = build_intent_category_query(size, keywords_str, boosting_fields, role_filter, bowling_style_filter)
 
-    print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
-    return results
-
-
-def search_best(resultword, intent_categories, size, is_best):
-    print(resultword, intent_categories, size, is_best)
-    fields = []
-
-    order = "desc"
-    if not is_best:
-        order = "asc"
-
-    batter_intents = ["batter", "batsmen", "player", "runs", "පිතිකරුවන්", "ක්‍රීඩකයා", "ලකුණු"]
-    bowler_intents = ["bowler", "player", "wicket", "පන්දු", "යවන්නා", "කඩුලු"]
-
-    sort_query = {}
-    if not set(intent_categories).isdisjoint(batter_intents):
-        sort_query["odi_runs"] = {"order": order}
-    if not set(intent_categories).isdisjoint(bowler_intents):
-        sort_query["odi_wickets"] = {"order": order}
-
-    if size is None:
-        size = 10
-
-    if resultword:
-        query = bool_multi_match_and_sort(size, sort_query, resultword, fields)
-    else:
-        query = multi_match_any_and_sort(size, sort_query)
-
-    print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
-    return results
+    print("search for normal text query : {}".format(query))
+    results = None
+    try:
+        results = es.search(index='sri-lankan-cricketers', body=query)
+    except ElasticsearchException as ex:
+        print(ex.args)
+    finally:
+        print("======= search for normal text end =======")
+        return results
 
 
-def search_phrase(phrase):
-    query = phrase_query(phrase)
+def search_for_best_or_worst(keywords_str, intent_categories, size, is_best, role_filter, bowling_style_filter):
+    print("======= search for best/worst intent begin =======")
+    print("keywords_str : {}".format(keywords_str))
+    print("intent_categories : {}".format(intent_categories))
+    print("size : {}".format(size))
+    print("is_best : {}".format(is_best))
+    print("role_filter : {}".format(role_filter))
+    print("bowling_style_filter : {}".format(bowling_style_filter))
 
-    print(query)
-    results = es.search(index='sri-lankan-cricketers', body=query)
-    return results
+    query = build_best_or_worst_intent_query(keywords_str, intent_categories, size, is_best, role_filter,
+                                             bowling_style_filter)
+
+    print("search for best/worst intent query : {}".format(query))
+    results = None
+    try:
+        results = es.search(index='sri-lankan-cricketers', body=query)
+    except ElasticsearchException as ex:
+        print(ex.args)
+    finally:
+        print("======= search for best/worst intent end =======")
+        return results
+
+
+def search_phrase(phrase, role_filter, bowling_style_filter):
+    print("======= search for phrase intent begin =======")
+    print("phrase : {}".format(phrase))
+    print("role_filter : {}".format(role_filter))
+    print("bowling_style_filter : {}".format(bowling_style_filter))
+
+    query = build_phrase_query(phrase, role_filter, bowling_style_filter)
+
+    print("search for phrase intent final_query : {}".format(query))
+    results = None
+    try:
+        results = es.search(index='sri-lankan-cricketers', body=query)
+    except ElasticsearchException as ex:
+        print(ex.args)
+    finally:
+        print("======= search for phrase intent end =======")
+        return results
 
 
 def show_results(result):
@@ -191,15 +202,23 @@ def query_preprocessor(query):
 
 
 def post_processor(result):
+    final_result = {}
+    if not result:
+        final_result['no_result'] = True
+        return final_result, [], []
+
     hits = result.get('hits').get('hits')
     player_count = len(hits)
     final_result = {}
+    roles = []
+    bowling_styles = []
     if player_count == 0:
         final_result['no_result'] = True
     else:
         final_result['no_result'] = False
         final_result['player_count'] = player_count
         players = []
+
         for result_index in range(len(hits)):
             player = {}
             player_details = hits[result_index].get('_source')
@@ -214,39 +233,59 @@ def post_processor(result):
 
         final_result['players'] = players
 
-        # aggregations = result['aggregations']
-        # print(aggregations)
+        aggregations = result['aggregations']
+        print(aggregations)
+        roles = aggregations['role']['buckets']
+        for role in roles:
+            role['id'] = f'role-{roles.index(role)}'
 
-    return final_result
+        bowling_styles = aggregations['bowling_style']['buckets']
+        for bowling_style in bowling_styles:
+            bowling_style['id'] = f'bowling-style-{bowling_styles.index(bowling_style)}'
+
+    return final_result, roles, bowling_styles
 
 
-def search(user_query):
-
+def search(user_query, role_filter=[], bowling_style_filter=[]):
     tokens, phrases = query_preprocessor(user_query)
 
     print(tokens, phrases)
 
     if len(phrases) > 0:
-        search_result = search_phrase(phrases[0])
+        search_result = search_phrase(phrases[0], role_filter, bowling_style_filter)
         return post_processor(search_result)
 
     is_intent_best, is_intent_worst, is_intent_category, \
-    intent_categories, intent_count, resultword = intent_classifier(tokens)
+    intent_categories, intent_count, keywords_str = intent_classifier(tokens)
 
-    print(is_intent_best, is_intent_worst, is_intent_category, intent_categories, intent_count, resultword)
+    print(is_intent_best, is_intent_worst, is_intent_category, intent_categories, intent_count, keywords_str)
     if is_intent_best:
-        search_result = search_best(resultword, intent_categories, intent_count, True)
+        search_result = search_for_best_or_worst(keywords_str, intent_categories, intent_count, True, role_filter,
+                                                 bowling_style_filter)
     elif is_intent_worst:
-        search_result = search_best(resultword, intent_categories, intent_count, False)
+        search_result = search_for_best_or_worst(keywords_str, intent_categories, intent_count, False, role_filter,
+                                                 bowling_style_filter)
     elif intent_categories:
-        search_result = search_intent_category(resultword, intent_categories, intent_count)
+        search_result = search_intent_category(keywords_str, intent_categories, intent_count)
     else:
-        search_result = search_text(user_query)
-    print(show_results(search_result))
-    print(search_result)
+        keywords_str = ' '.join(tokens)
+        search_result = search_text(keywords_str, role_filter, bowling_style_filter)
 
     return post_processor(search_result)
 
 
 def get_player_by_id(player_id):
-    return es.get(index=Settings.index_name.value, id=player_id)
+    print("======= get player details begin =======")
+    print("player_id : {}".format(player_id))
+
+    player = None
+    try:
+        results = es.get(index=Settings.index_name.value, id=player_id)
+        player = results.get('_source')
+        player["image_url"] = get_player_images()[player["website_url"]]
+
+    except ElasticsearchException as ex:
+        print(ex.args)
+    finally:
+        print("======= get player details begin end =======")
+        return player

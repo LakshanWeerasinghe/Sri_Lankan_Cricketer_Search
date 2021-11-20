@@ -105,3 +105,16 @@ body {
 }
 
 /* End Bowling*/
+
+/* Begin Filter Button */
+
+.btn-filter{
+    border: None;
+    padding: 10px;
+    color: white;
+    background-color: indigo;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+/* End Filter Button */
