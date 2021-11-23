@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 
 import search
+from Settings import Settings
 
 app = Flask(__name__)
 
@@ -65,4 +66,4 @@ def get_user_profile(id):
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = 'mysecret'
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host=Settings.flask_host.value, port=Settings.flask_port.value)

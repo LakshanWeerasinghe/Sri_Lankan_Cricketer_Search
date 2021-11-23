@@ -3,7 +3,9 @@ import json
 
 from elasticsearch import Elasticsearch
 
-es = Elasticsearch('http://localhost:9200')
+from Settings import Settings
+
+es = Elasticsearch(Settings.es_url.value)
 
 
 def read_corpus(filename):

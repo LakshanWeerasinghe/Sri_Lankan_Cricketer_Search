@@ -12,3 +12,4 @@ class Settings(Enum):
     index_name = 'sri-lankan-cricketers'
     es_host = 'localhost'
     es_port = 9000
+    es_url = 'http://localhost:9200'

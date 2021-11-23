@@ -24,7 +24,26 @@ website and wikipedia using the BeautifulSoup library.
 ├── search.py : search functions for processing queries and returning results
 ├── queries.txt :  Example queries supported by search engine  
 ├── Settings.py :  ES configuration with host, port, and index name
+├── requirements.txt : python dependencies
 
+```
+
+## Project Setup
+
+First run the below commands to clone and install dependencies.
+```
+git clone https://github.com/LakshanWeerasinghe/Sri_Lankan_Cricketer_Search
+cd Sri_Lankan_Cricketer_Search
+
+pip install requirements.txt
+```
+
+Then update `Settings.py` file `flask_host`, `flask_port` and `es_url` fields and up the elasticsearch local server.
+Finally, run the below commands to create index and run the flask server to search queries.
+
+```
+python create_index.py
+python app.py
 ```
 
 ## Data fields

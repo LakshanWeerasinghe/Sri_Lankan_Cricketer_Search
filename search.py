@@ -8,7 +8,7 @@ from Settings import Settings
 from utils.tokenizer import Tokenizer
 from utils.player_images import get_player_images
 
-es = Elasticsearch('http://localhost:9200')
+es = Elasticsearch(Settings.es_url.value)
 
 
 def get_best_similarity(word, keywords):
@@ -212,7 +212,6 @@ def post_processor(result):
 
     hits = result.get('hits').get('hits')
     player_count = len(hits)
-    final_result = {}
     roles = []
     bowling_styles = []
     if player_count == 0:
