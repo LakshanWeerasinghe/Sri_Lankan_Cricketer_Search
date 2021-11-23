@@ -149,13 +149,13 @@ English language. For example queries, refer to `queries.txt` file.
 
 1. Main Page
  <br/><br/>
-![Search workflow](assets/images/main.png)
+![Main Page](assets/images/main.PNG)
    <br /><br />
 2. Search Results Page
    <br/><br/>
-   ![Search workflow](assets/images/results.png)
+   ![Search Results Page](assets/images/results.PNG)
    <br/><br/>
 3. Player Details Page
    <br/><br/>
-   ![Search workflow](assets/images/player.png)
+   ![Player Details Page](assets/images/player.PNG)
 
