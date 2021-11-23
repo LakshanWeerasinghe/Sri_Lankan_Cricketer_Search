@@ -31,11 +31,12 @@ website and wikipedia using the BeautifulSoup library.
 ## Project Setup
 
 First run the below commands to clone and install dependencies.
+
 ```
 git clone https://github.com/LakshanWeerasinghe/Sri_Lankan_Cricketer_Search
 cd Sri_Lankan_Cricketer_Search
 
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Then update `Settings.py` file `flask_host`, `flask_port` and `es_url` fields and up the elasticsearch local server.
@@ -87,23 +88,25 @@ The standard indexing methods, mapping and analyzer provided by the Elasticsearc
 
 ### Searching
 
-First the user queries are it passed to the intent classifier, where four different intents can be identified. Then the
-Elasticsearch query is build according to the user intent, and it will get executed. In here user also can specify the
-result size so, that the default size get override. The search queries can be in Sinhala, English or in both Sinhala and
-English language. For example queries, refer to `queries.txt` file.
+First the user query is preprocessed (removing punctuation and stop words, lowercasing) and then tokenized. Then the
+intent behind the user query is identified. Using the tokenized keywords, intents, and user applied filters (if any) the
+final query is built English language. 
+<br />
+For example queries, refer to `queries.txt` file.
 
 ![Search workflow](assets/images/search.png)
 
 ## Advance Features
 
 - Text mining and text preprocessing
-    - Search queries are processed before intent classification, here punctuations removed and lowering english words
-      happen.
+    - Search queries are preprocessed by removing punctuations and stop words, lowercasing the letters, and then
+      tokenizing the text.
+
 
 - Intent Classification
-    - Once the query is preprocessed intent behind the query is identified using Tokenization, word vectorization and
-      cosine distance. Following are the four intents that can identified by the system.
-      
+    - Once the query is preprocessed intent behind the query is identified using word vectorization and cosine distance.
+      Following are the five intents that can be identified by the system.
+
     ```
     1. Top search queries
       eg : හොඳම පිතිකරුවන්, හොඳම ක්‍රීඩකයන් 7, top 5 bowlers
@@ -121,16 +124,15 @@ English language. For example queries, refer to `queries.txt` file.
        eg : දසුන්, ආනන්ද විද්‍යාලය, Muthiah Muralidaran
        
     ```
-  
+
 - Faceted Search
-    - The search engine supported faceted search related to name, batting style and role.
+    - This system supports faceted search related to bowling style and role.
 
 - Bilingual support
-    - The search engine supports only Sinhala, only English and Sinhala and English mixed queries.
+    - This system supports both Sinhala and English queries.
 
 - Synonyms support
-    - The search engine also support synonyms and that can be either in Sinhala or in English. Following are few
-      synonyms supported by the search engine.
+    - This system supports both Sinhala and English synonyms.
       ```
       1. Top synonyms :
             eg : top, best, super, පට්ට, සුපිරිම, හොඳම
@@ -141,15 +143,13 @@ English language. For example queries, refer to `queries.txt` file.
       ```
 
 - Resistant to simple spelling errors
-    - Due to the use of vectorization and distance calculation the search engine is resistant to small spelling errors
-      and these are automatically corrected and related search results are generated.
-
+    - Using vectorization and distance measurement techniques spelling errors are neglected.
 
 ## User Interfaces
 
 1. Main Page
- <br/><br/>
-![Main Page](assets/images/main.PNG)
+   <br/><br/>
+   ![Main Page](assets/images/main.PNG)
    <br /><br />
 2. Search Results Page
    <br/><br/>
