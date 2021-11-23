@@ -21,6 +21,7 @@ def get_best_similarity(word, keywords):
 
 def intent_classifier(keywords):
     print("======= intent classifying process begin =======")
+    print("keywords : {}".format(keywords))
 
     best_terms = ["top", "best", "super", "පට්ට", "පට්ටම", "සුපිරිම", "හොඳම", "හොදම"]
     worst_terms = ["worst", "bad", "ugly", "චොරම", "චාටර්ම"]
@@ -61,6 +62,7 @@ def intent_classifier(keywords):
         if term == "player":
             _intent_count = 1
 
+    print(filter_word_indexes)
     keywords_str = ''
     if _is_intent_best or _is_intent_worst or _is_intent_category:
         query_words = keywords
@@ -128,7 +130,8 @@ def search_intent_category(keywords_str, intent_categories, size, role_filter, b
                 boosting_fields.append(f'{category}_debut_en^3')
                 boosting_fields.append(f'{category}_debut_si^3')
             else:
-                boosting_fields.extend(["test_debut_en", "odi_debut_en", "t20_debut_en"])
+                boosting_fields.extend(
+                    ["test_debut_en", "odi_debut_en", "t20_debut_en", "test_debut_si", "odi_debut_si", "t20_debut_si"])
         elif category in ["odi", "test", "t20"] and "debut":
             continue
         else:
@@ -266,7 +269,8 @@ def search(user_query, role_filter=[], bowling_style_filter=[]):
         search_result = search_for_best_or_worst(keywords_str, intent_categories, intent_count, False, role_filter,
                                                  bowling_style_filter)
     elif intent_categories:
-        search_result = search_intent_category(keywords_str, intent_categories, intent_count)
+        search_result = search_intent_category(keywords_str, intent_categories, intent_count, role_filter,
+                                               bowling_style_filter)
     else:
         keywords_str = ' '.join(tokens)
         search_result = search_text(keywords_str, role_filter, bowling_style_filter)

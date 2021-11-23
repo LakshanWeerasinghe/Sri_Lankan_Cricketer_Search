@@ -1,10 +1,9 @@
-# Sri Lankan Cricketers Search Engine 
-This repository contains source for a search engine that can used to query Sri Lankan
-ODI cricketers. This information retrieval system was build using Elasticsearch and Flask.
-This search engine supports both Sinhala and English language queries. The information 
-about cricketers were extract from [espncricinfo.com](https://www.espncricinfo.com/player) 
-and wikipedia using BeautifulSoup.
+# Sri Lankan Cricketers Search Engine
 
+This repository contains the source code of a search engine which can be used to query Sri Lankan ODI cricketers. This
+Search engine was built using Elasticsearch and Flask. It supports both Sinhala and English language queries. The
+information about Sri Lankan cricketers was extracted from the [espncricinfo.com] (https://www.espncricinfo.com/player)
+website and wikipedia using the BeautifulSoup library.
 
 ## Directory Structure
 
@@ -24,7 +23,8 @@ and wikipedia using BeautifulSoup.
 ├── queries.py : script contains all queries
 ├── search.py : search functions for processing queries and returning results
 ├── queries.txt :  Example queries supported by search engine  
-├── config.py :  ES configuration with host, port, and index name
+├── Settings.py :  ES configuration with host, port, and index name
+
 ```
 
 ## Data fields
@@ -47,57 +47,70 @@ Each cricketer entry contains the following data fields. Biography and Internal 
     14. Espncricinfo website url
 
 ## Data Scraping
-The list of Sri Lankan ODI cricketers, in [espncricinfo.com](https://www.espncricinfo.com/player) used to extract 
-information to the data fields mentioned above. But, International Carrier field was extracted from Wikipedia 
-belongs to each player. This process used HTML/XML parsing library BeautifulSoup, and used multithreading to
-speed up the process. In the Text Preprocessing step  authors names, punctuations and newline characters were removed.
-Do to the aforementioned processing was done using simple text replacements and regex operations.<br />
-Then cleaned data passed to translator convert it to Sinhala language. The Biography, International carrier, Test debut,
-ODI debut and T20 debut was translated using googletrans api and, other text fields such as Role, Batting Style, Bowling
-Style and Education was translated using predefined dictionaries. Finally, the final_corpus.json file created.
+
+The [espncricinfo.com](https://www.espncricinfo.com/player) website was used to extract the information about Sri Lankan
+ODI Cricketers. All the data fields mentioned above were extracted from this website apart from the “International
+Career” field, which was extracted from Wikipedia. For this data extraction process, “BeautifulSoup” which is a HTML/XML
+parsing library was used along with multithreading to speed up the process. In the Text Preprocessing step, authors
+names, punctuations, and newline characters were removed. The aforementioned processing was done using simple text
+replacements and regex operations. Then the cleaned data was passed to a translator to convert it into Sinhala language.
+The fields “Biography”, “International carrier”, “Test debut”, “ODI debut”, and “T20 debut” were translated using the
+“googletrans” api and other text fields such as “Role”, “Batting Style”, “Bowling Style”, and “Education” were
+translated using predefined dictionaries. Finally, the final_corpus.json file was created..
 
 ![Data Scrape Workflow](assets/images/scrape.png)
 
 ## Search Engine
 
 ### Indexing
-The standard indexing methods, mapping and analyzer provided by the  Elasticsearch was used. 
+
+The standard indexing methods, mapping and analyzer provided by the Elasticsearch was used.
 
 ### Searching
-First the user queries are it passed to the intent classifier, where four different intents can be identified. 
-Then the Elasticsearch query is build according to the user intent, and it will get executed. In here user also can 
-specify the result size so, that the default size get override. The search queries can be in Sinhala, English or in 
-both Sinhala and English language. For example queries, refer to `queries.txt` file.
+
+First the user queries are it passed to the intent classifier, where four different intents can be identified. Then the
+Elasticsearch query is build according to the user intent, and it will get executed. In here user also can specify the
+result size so, that the default size get override. The search queries can be in Sinhala, English or in both Sinhala and
+English language. For example queries, refer to `queries.txt` file.
 
 ![Search workflow](assets/images/search.png)
 
 ## Advance Features
 
 - Text mining and text preprocessing
-    - Search queries are processed before intent classification, here punctuations removed and lowering english words 
+    - Search queries are processed before intent classification, here punctuations removed and lowering english words
       happen.
-      
+
 - Intent Classification
-    - Once the query is preprocessed intent behind the query is identified using Tokenization, word vectorization
-    and cosine distance. Following are the four intents that can identified by the system.
-      ```
-      1. Top search queries
-            eg : හොඳම පිතිකරුවන් 10, පට්ටම players, top 10 bowlers
-      2. Worest search queries
-            eg : චොරම පිතිකරුවන් 5
-      3. Field specify intent
-            eg : මංගල තරගය ගාල්ල, දකුණත් පිතිකරුවන්, odi debut in england
-      4. Open text search
-            eg : දසුන් ශානක, තරගාවලියේ වීරයා
-      ```
+    - Once the query is preprocessed intent behind the query is identified using Tokenization, word vectorization and
+      cosine distance. Following are the four intents that can identified by the system.
+      
+    ```
+    1. Top search queries
+      eg : හොඳම පිතිකරුවන්, හොඳම ක්‍රීඩකයන් 7, top 5 bowlers
+    
+    2. Worst search queries
+       eg : worst 5 batsmen, චොරම bowlers 6
+    
+    3. Field filtered queries
+       eg : දකුණත් පිතිකරුවන් 8, වමත් පිතිකරු, මංගල තරගය බංග්ලාදේශය සමග, debut at Galle
+    
+    4. Phrase queries
+       eg : "ඕස්ට්‍රේලියානු වේග පන්දු පුහුණුකරු", 'පිතිකරණය අලංකාරයට වඩා ඵලදායී'
+    
+    5. Multi match queries
+       eg : දසුන්, ආනන්ද විද්‍යාලය, Muthiah Muralidaran
+       
+    ```
+  
 - Faceted Search
     - The search engine supported faceted search related to name, batting style and role.
-  
+
 - Bilingual support
-    - The search engine supports only Sinhala, only English and Sinhala and English mixed queries. 
-  
+    - The search engine supports only Sinhala, only English and Sinhala and English mixed queries.
+
 - Synonyms support
-    - The search engine also support synonyms and that can be either in Sinhala or in English. Following are few 
+    - The search engine also support synonyms and that can be either in Sinhala or in English. Following are few
       synonyms supported by the search engine.
       ```
       1. Top synonyms :
@@ -107,9 +120,9 @@ both Sinhala and English language. For example queries, refer to `queries.txt` f
       3. Other synonyms :
             eg : batter, batsmen, පිතිකරුවන්, ක්‍රීඩකයා
       ```
-  
+
 - Resistant to simple spelling errors
-    - Due to the use of vectorization and distance calculation the search engine is resistant to small spelling 
-      errors and these are automatically corrected and related search results are generated.
+    - Due to the use of vectorization and distance calculation the search engine is resistant to small spelling errors
+      and these are automatically corrected and related search results are generated.
 
 

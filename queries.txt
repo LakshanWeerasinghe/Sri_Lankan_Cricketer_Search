@@ -1,8 +1,25 @@
-දසුන් ශානක
-දකුණත් පිතිකරුවන්
-පිතිකරුවන්
-හොඳම දකුණත් පිතිකරුවන්
-හොඳම පිතිකරුවන් 10
-ලෝඩ්ස්හි ශතකයක්
-තරගාවලියේ වීරයා
-best batsmen
+Different type of queries supported by the system
+
+1. Top search queries
+    eg : හොඳම පිතිකරුවන්
+         හොඳම ක්‍රීඩකයන් 7
+         top 5 bowlers
+
+2. Worst search queries
+    eg : worst 5 batsmen
+         චොරම bowlers 6
+
+3. Field filtered queries
+    eg : දකුණත් පිතිකරුවන් 8
+         වමත් පිතිකරු
+         මංගල තරගය බංග්ලාදේශය සමග
+         debut at Galle
+
+4. Phrase queries
+    eg : "ඕස්ට්‍රේලියානු වේග පන්දු පුහුණුකරු"
+         'පිතිකරණය අලංකාරයට වඩා ඵලදායී'
+
+5. Multi match queries
+   eg : දසුන්
+        ආනන්ද විද්‍යාලය
+        Muthiah Muralidaran

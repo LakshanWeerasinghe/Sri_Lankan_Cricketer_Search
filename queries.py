@@ -1,30 +1,4 @@
-def multi_match_any_and_sort(size, sort_query):
-    return {
-        "size": size,
-        "query": {
-            "match_all": {
-            }
-        },
-        "sort": sort_query,
-        "aggs": {
-            "bowling_style": {
-                "terms": {
-                    "field": "bowling_style_si.keyword",
-                    "size": 10
-                }
-            },
-            "role": {
-                "terms": {
-                    "field": "role_si.keyword",
-                    "size": 10
-                }
-            }
-        }
-    }
-
-
 def build_best_or_worst_intent_query(keywords_str, intent_categories, size, is_best, role_filter, bowling_style_filter):
-
     order = "desc"
     if not is_best:
         order = "asc"
