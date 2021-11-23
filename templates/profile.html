@@ -44,6 +44,13 @@
                     <p class="profile-content"><strong>{{res['bowling_style_si']}}</strong></p>
                 </li>
             </ul>
+            {% if res['education_si'] %}
+            <ul>
+                <li><p class="profile-title">පාසල</p>
+                    <p class="profile-content">{{res['education_si']}}</p>
+                </li>
+            </ul>
+            {% endif %}
             {% if res['test_debut_si'] %}
             <ul>
                 <li><p class="profile-title">පළමු ටෙස් තරගය</p>
@@ -57,25 +64,39 @@
                     <p class="profile-content">{{res['odi_debut_si']}}</p>
                 </li>
             </ul>
-            {% if res['t20i_debut_si'] %}
             {% endif %}
+            {% if res['t20i_debut_si'] %}
             <ul>
                 <li><p class="profile-title">පළමු විස්සයි විස්ස තරගය</p>
                     <p class="profile-content">{{res['t20i_debut_si']}}</p>
                 </li>
             </ul>
-            {% if res['biography_si'] %}
             {% endif %}
+            {% if res['biography_si'] %}
             <ul>
                 <li>
                     <p class="profile-title">{{res['biography_si']}}</p>
                 </li>
             </ul>
-            {% if res['international_carrier_si'] %}
             {% endif %}
+            {% if res['biography_en'] %}
+            <ul>
+                <li>
+                    <p class="profile-title">{{res['biography_en']}}</p>
+                </li>
+            </ul>
+            {% endif %}
+            {% if res['international_carrier_si'] %}
             <ul>
                 <li><p class="profile-title"><strong>ජාත්‍යන්තර පිටියේ විස්තර</strong></p>
                     <p class="profile-title">{{res['international_carrier_si']}}</p>
+                </li>
+            </ul>
+            {% endif %}
+            {% if res['international_carrier_en'] %}
+            <ul>
+                <li><p class="profile-title"><strong>International Carrier</strong></p>
+                    <p class="profile-title">{{res['international_carrier_en']}}</p>
                 </li>
             </ul>
             {% endif %}

@@ -145,3 +145,17 @@ English language. For example queries, refer to `queries.txt` file.
       and these are automatically corrected and related search results are generated.
 
 
+## User Interfaces
+
+1. Main Page
+ <br/><br/>
+![Search workflow](assets/images/main.png)
+   <br /><br />
+2. Search Results Page
+   <br/><br/>
+   ![Search workflow](assets/images/results.png)
+   <br/><br/>
+3. Player Details Page
+   <br/><br/>
+   ![Search workflow](assets/images/player.png)
+
